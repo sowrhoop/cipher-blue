@@ -1,0 +1,24 @@
+[Unit]
+Description=Remounts All Partitions Securely
+DefaultDependencies=no
+Before=sysinit.target
+Requires=local-fs.target
+After=local-fs.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/mount --make-private -o remount,nosuid,noexec,nodev,noatime /dev/shm
+#ExecStart=/usr/bin/mount --make-private -o remount,nosuid,noexec,nodev,noatime /run
+#ExecStart=/usr/bin/mount --make-private -o remount,nosuid,noexec,noatime /dev
+#ExecStart=/usr/bin/mount --make-private -o remount,nosuid,nodev,noatime /etc
+#ExecStart=/usr/bin/mount --make-private -o remount,nosuid,noexec,nodev,noatime /sysroot/ostree/deploy/fedora/var
+#ExecStart=/usr/bin/mount --make-private -o remount,ro,nosuid,noexec,nodev,noatime /sysroot
+#ExecStart=/usr/bin/mount --make-private -o remount,ro,nodev,noatime /usr
+ExecStart=/usr/bin/chmod 644 /etc/dconf/db/distro /etc/dconf/db/gdm /etc/dconf/db/ibus /etc/dconf/db/local /etc/dconf/db/site
+ExecStart=/usr/bin/chcon -u system_u /etc/dconf/db/distro /etc/dconf/db/gdm /etc/dconf/db/ibus /etc/dconf/db/local /etc/dconf/db/site
+ExecStart=/usr/sbin/restorecon -Rv /etc/dconf/db/distro /etc/dconf/db/gdm /etc/dconf/db/ibus /etc/dconf/db/local /etc/dconf/db/site
+StandardOutput=null
+StandardError=null
+
+[Install]
+WantedBy=sysinit.target
