@@ -1,0 +1,8 @@
+[Unit]
+Description=Cipherblue Privacy Mode
+Wants=cipher-privacy-apply.service cipher-killswitch.service
+After=network-pre.target
+
+[Install]
+WantedBy=multi-user.target
+

@@ -21,6 +21,8 @@
 /org/gnome/desktop/privacy/report-technical-problems
 /org/gnome/desktop/privacy/send-software-usage-stats
 /org/gnome/desktop/privacy/remember-app-usage
+/org/gnome/desktop/privacy/disable-camera
+/org/gnome/desktop/privacy/disable-microphone
 
 /org/gnome/online-accounts/whitelisted-providers
 
@@ -33,3 +35,8 @@
 /org/gnome/desktop/wm/preferences/button-layout
 
 /org/gnome/desktop/interface/color-scheme
+/org/gnome/desktop/screensaver/lock-enabled
+/org/gnome/desktop/screensaver/lock-delay
+/org/gnome/desktop/session/idle-delay
+/org/gnome/desktop/notifications/show-in-lock-screen
+/org/gnome/desktop/search-providers/disable-external

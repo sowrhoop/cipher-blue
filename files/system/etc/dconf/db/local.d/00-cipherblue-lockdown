@@ -36,6 +36,8 @@ remove-old-temp-files=true
 report-technical-problems=false
 send-software-usage-stats=false
 remember-app-usage=false
+disable-camera=true
+disable-microphone=true
 
 [org/gnome/desktop/remote-desktop/rdp]
 enable=false
@@ -51,3 +53,16 @@ to-finger-scrolling-enabled=false
 
 [org/gnome/mutter]
 center-new-windows=true
+
+[org/gnome/desktop/screensaver]
+lock-enabled=true
+lock-delay=uint32 0
+
+[org/gnome/desktop/session]
+idle-delay=uint32 300
+
+[org/gnome/desktop/notifications]
+show-in-lock-screen=false
+
+[org/gnome/desktop/search-providers]
+disable-external=true

@@ -42,5 +42,6 @@ modules:
         - permission-hardening.sh
         - systemd-hardening.sh
         - suid-hardening.sh
+        - dconf-compile.sh
     - type: cipherblue-signing
       source: local
