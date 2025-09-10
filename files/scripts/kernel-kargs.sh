@@ -43,10 +43,12 @@ kargs=(
     tsx=off
     tsx_async_abort=full,nosmt
     vsyscall=none
+    page_poison=1
+    ftrace=off
+    lsm=lockdown,yama,selinux,bpf
 )
 
 if command -v rpm-ostree >/dev/null 2>&1; then
   kargs_str=$(IFS=" "; echo "${kargs[*]}")
   rpm-ostree kargs --append-if-missing="$kargs_str" >/dev/null
 fi
-

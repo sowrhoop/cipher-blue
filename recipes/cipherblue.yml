@@ -10,6 +10,7 @@ modules:
       install:
         - hardened_malloc
         - run0edit
+        - usbguard
     - type: script
       scripts:
         - httpsmirrors.sh
