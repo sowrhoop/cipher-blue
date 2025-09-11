@@ -21,6 +21,6 @@ lock_file /etc/NetworkManager/conf.d/99-disable-connectivity.conf
 lock_file /etc/unbound/unbound.conf
 lock_file /etc/containers/policy.json
 lock_file /etc/ld.so.preload
+lock_file /etc/default/useradd
 
 exit 0
-

@@ -295,3 +295,11 @@ semanage login -m -s user_u -r s0 __default__
 semanage login -m -s sysadm_u -r s0 root
 semanage login -a -s sysadm_u -r s0 sysadmin
 ```
+
+### Terminal Access Policy
+
+- Non-admin users: login shell is set to 
+ologin by default and enforced at boot for existing accounts (UID >= 1000). Terminal emulators cannot spawn a shell.
+- Admin user (sysadmin): login shell is a restricted console allowing only pm-ostree and latpak commands (plus exit/help). Remote SSH remains permitted only for sysadmin.
+- Virtual consoles: not restricted to a single TTY, but only sysadmin can authenticate into a shell. Others receive nologin.
+- New users: useradd defaults to SHELL=/usr/sbin/nologin.
