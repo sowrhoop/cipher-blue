@@ -40,11 +40,11 @@ modules:
     - type: script
       scripts:
         - cipherblue-cleanup.sh
-        - authselect-hardening.sh
+        #- authselect-hardening.sh
         - permission-hardening.sh
         - systemd-hardening.sh
         - suid-hardening.sh
-        - dconf-compile.sh
-        - ima-setup.sh
+        #- dconf-compile.sh
+        #- ima-setup.sh
     - type: cipherblue-signing
       source: local
