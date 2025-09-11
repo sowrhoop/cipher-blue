@@ -19,7 +19,6 @@ modules:
         - package-hardening.sh
         - cipherblue-cleanup.sh
         - selinux-hardening.sh
-        #- kernel-kargs.sh  # set locally post-install; see README
     - type: rpm-ostree
       remove:
         - buildah
