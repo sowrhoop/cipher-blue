@@ -12,8 +12,7 @@
 
 - Install or rebase to the latest image (see Installation).
 - First boot: existing USB devices are allowlisted and new devices are blocked (USBGuard).
-- Privacy mode is enabled by default (camera/mic/radios blocked) and the VPN killswitch enforces egress via VPN interfaces only.
-- To temporarily allow non-VPN networking, set `DISABLED=1` in `/etc/cipherblue/killswitch.conf` and `systemctl restart cipher-killswitch.service`.
+- Privacy mode is enforced (camera/mic/radios blocked) and the VPN killswitch enforces egress via VPN interfaces only.
 - Verify hardening (see Verification).
 
 ## Hardened Defaults
@@ -28,6 +27,31 @@
 - USB control: USBGuard blocks new devices after first-boot allowlisting.
 - VPN killswitch (opt-in): nftables drops all egress except VPN interfaces.
 - Kernel args: strict mitigations, IOMMU hardening, nosmt options, page poisoning, tracing off (applied at build via `files/scripts/kernel-kargs.sh`).
+
+## Account Model (Zero-Trust)
+
+- Admin account: `sysadmin` is created at boot (home `/home/sysadmin`). It has a minimal PolicyKit allowlist for routine admin tasks.
+- Other users: you can create additional users normally; they can log in and use the desktop, but have no PolicyKit privileges and cannot escalate (no `sudo`, `su`, or `pkexec`).
+- PAM access: interactive logins are permitted for local users by default. System/service accounts lacking a valid shell cannot log in.
+- Root: direct logins are disabled; use rescue media if emergency access is needed.
+- Rationale: all users are untrusted; only `sysadmin` has narrowly-scoped administrative rights.
+
+### Additional User Confinement
+
+- Sessions: user processes are killed on logout and IPC is cleaned (`logind.conf.d/50-killuser.conf`).
+- Rootless containers: disabled by default via `Delegate=no` on `user@.service` (blocks unprivileged container managers).
+- Unprivileged user namespaces: disabled (`kernel.unprivileged_userns_clone=0`).
+- Per-user resources: conservative `nproc`/`nofile` caps applied via `limits.d/60-cipherblue.conf`.
+- SSH: remote login limited to `sysadmin` only; others can log in locally.
+
+### Minimal Admin Capability (sysadmin only)
+
+- Only three rpm-ostree PolicyKit actions are permitted for `sysadmin` and require authentication:
+  - `org.projectatomic.rpmostree1.bootconfig`
+  - `org.projectatomic.rpmostree1.cleanup`
+  - `org.projectatomic.rpmostree1.rebase`
+- All other PolicyKit actions are denied by default for every user, including `sysadmin`.
+- Root account is locked and has a nologin shell (`cipher-lock-root.service`).
 
 ## Installation
 
@@ -104,12 +128,8 @@ rpm-ostree kargs --append-if-missing="$kargs_str" > /dev/null
 
 ## Privacy Mode
 
-Cipherblue’s privacy mode is enabled by default. It blocks camera/microphone drivers, disables Bluetooth/WWAN radios, and pulls in the VPN killswitch.
+Cipherblue privacy is enforced. It blocks camera/microphone drivers, disables Bluetooth/WWAN radios, and pulls in the VPN killswitch.
 
-- Disable and revert (persist across reboots):
-  - `systemctl disable --now cipher-privacy.target`
-- Re-enable:
-  - `systemctl enable --now cipher-privacy.target`
 - What it does:
   - Runtime-blacklists modules `uvcvideo`, `snd_usb_audio`, `snd_hda_intel`, `v4l2loopback` in `/run/modprobe.d/cipher-privacy.conf` and attempts to unload them
   - `rfkill block bluetooth` and `rfkill block wwan`
@@ -117,14 +137,14 @@ Cipherblue’s privacy mode is enabled by default. It blocks camera/microphone d
 
 ## VPN Killswitch
 
-Blocks all outbound traffic except through loopback and allowed VPN interfaces. Enabled by default.
+Blocks all outbound traffic except through loopback and allowed VPN interfaces. Enforced.
 
 - Configure allowed interfaces:
   - Edit `/etc/cipherblue/killswitch.conf` (default: `ALLOWED_IFACES="wg0 tun0 tap0"`).
 - Enable/disable:
   - `systemctl enable --now cipher-killswitch.service`
   - `systemctl disable --now cipher-killswitch.service`
-  - Quick override without disabling: set `DISABLED=1` in `/etc/cipherblue/killswitch.conf` and `systemctl restart cipher-killswitch.service`.
+  - There is no override or disable switch.
 - Verify:
   - `nft list table inet cipher_ks`
 
@@ -179,6 +199,10 @@ Assess a service:
 - Sysctl: `sysctl kernel.io_uring_disabled`, `sysctl net.ipv4.ip_forward`, `sysctl net.ipv6.conf.all.forwarding`
 - USBGuard: `systemctl status usbguard-daemon`, `usbguard list-rules`
 - Killswitch: `nft list table inet cipher_ks`
+- Account policy:
+  - Login restriction: `grep -v '^#' /etc/security/access.conf`
+  - Sysadmin presence: `getent passwd sysadmin`
+  - Polkit: review rules in `/etc/polkit-1/rules.d/`
 
 ## Notes & Opt-Outs
 

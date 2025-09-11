@@ -1,9 +1,11 @@
 polkit.addRule(function(action, subject) {
-    if ((action.id == "org.projectatomic.rpmostree1.bootconfig" ||
-         action.id == "org.projectatomic.rpmostree1.cleanup" ||
-         action.id == "org.projectatomic.rpmostree1.rebase") &&
-         subject.active == true && subject.local == true &&
-         subject.isInGroup("wheel")) {
-         return polkit.Result.AUTH_SELF;
+    if (subject.user == "sysadmin" && subject.active == true && subject.local == true) {
+        if (action.id == "org.projectatomic.rpmostree1.bootconfig" ||
+            action.id == "org.projectatomic.rpmostree1.cleanup" ||
+            action.id == "org.projectatomic.rpmostree1.rebase") {
+            // Allow only these rpm-ostree operations for sysadmin, requiring authentication
+            return polkit.Result.AUTH_SELF;
+        }
     }
+    return polkit.Result.NOT_HANDLED;
 });

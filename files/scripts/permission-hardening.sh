@@ -4,6 +4,8 @@ set -oue pipefail
 
 chmod 700 /usr/bin/cipher-capabilities
 chmod 755 /usr/libexec/cipherblue/remount-run-user
+chmod 755 /usr/libexec/cipherblue/immutable-lock.sh
+chmod 755 /usr/libexec/cipherblue/lock-root.sh
 chmod 755 /etc/profile.d/cipherblue_umask.sh
 echo "" > /etc/securetty
 echo 'UriSchemes=file;https' | tee -a /etc/fwupd/fwupd.conf

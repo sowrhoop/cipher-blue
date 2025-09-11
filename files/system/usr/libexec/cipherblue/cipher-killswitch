@@ -9,10 +9,6 @@ set -euo pipefail
 
 ALLOWED_IFACES=${ALLOWED_IFACES:-"wg0 tun0 tap0"}
 
-# Allow disabling via environment configured in /etc/cipherblue/killswitch.conf
-if [[ "${DISABLED:-0}" == "1" ]]; then
-  exit 0
-fi
 
 readarray -t ifaces < <(printf '%s\n' $ALLOWED_IFACES)
 
