@@ -26,7 +26,7 @@
 - Systemd sandboxing: curated drop-ins for core services plus a safe baseline for others.
 - USB control: USBGuard blocks new devices after first-boot allowlisting.
 - VPN killswitch (opt-in): nftables drops all egress except VPN interfaces.
-- Kernel args: strict mitigations, IOMMU hardening, nosmt options, page poisoning, tracing off (applied at build via `files/scripts/kernel-kargs.sh`).
+- Kernel args: strict mitigations, IOMMU hardening, nosmt options, page poisoning, tracing off (apply locally; see Kernel Parameter Hardening).
 
 ## Account Model (Zero-Trust)
 
@@ -74,57 +74,74 @@ The `latest` tag always points to the newest build.
 
 ### Kernel Parameter Hardening
 
-Cipherblue applies hardened kernel arguments automatically during build (see `files/scripts/kernel-kargs.sh`). The snippet below is provided for reference or manual usage only:
+Hardened kernel arguments are not injected during the image build to keep CI and containerized builds stable. Apply them on your machine either right after installing/rebasing (recommended) or beforehand on your current rpm-ostree system. The settings persist across future deployments.
+
+Option A — Apply after install/rebase (recommended):
 
 ```
-kargs=(
-    amd_iommu=force_isolation
-    debugfs=off
-    efi=disable_early_pci_dma
-    extra_latent_entropy
-    gather_data_sampling=force
-    ia32_emulation=0
-    init_on_alloc=1
-    init_on_free=1
-    intel_iommu=on
-    iommu.passthrough=0
-    iommu.strict=1
-    iommu=force
-    ipv6.disable=1
-    kvm.nx_huge_pages=force
-    l1d_flush=on
-    l1tf=full,force
-    lockdown=confidentiality
-    loglevel=0
-    kvm-intel.vmentry_l1d_flush=always
-    mds=full,nosmt
-    mitigations=auto,nosmt
-    module.sig_enforce=1
-    nosmt=force
-    oops=panic
-    page_alloc.shuffle=1
-    pti=on
-    random.trust_bootloader=off
-    random.trust_cpu=off
-    randomize_kstack_offset=on
-    reg_file_data_sampling=on
-    slab_nomerge
-    slub_debug=ZF
-    spec_rstack_overflow=safe-ret
-    spec_store_bypass_disable=on
-    spectre_bhi=on
-    spectre_v2=on
-    tsx=off
-    tsx_async_abort=full,nosmt
-    vsyscall=none
-    page_poison=1
-    ftrace=off
-    lsm=lockdown,yama,selinux,bpf
+sudo bash -euo pipefail -c '
+args=(
+  amd_iommu=force_isolation
+  debugfs=off
+  efi=disable_early_pci_dma
+  extra_latent_entropy
+  gather_data_sampling=force
+  ia32_emulation=0
+  init_on_alloc=1
+  init_on_free=1
+  intel_iommu=on
+  iommu.passthrough=0
+  iommu.strict=1
+  iommu=force
+  ipv6.disable=1
+  kvm.nx_huge_pages=force
+  l1d_flush=on
+  l1tf=full,force
+  lockdown=confidentiality
+  loglevel=0
+  kvm-intel.vmentry_l1d_flush=always
+  mds=full,nosmt
+  mitigations=auto,nosmt
+  module.sig_enforce=1
+  nosmt=force
+  oops=panic
+  page_alloc.shuffle=1
+  pti=on
+  random.trust_bootloader=off
+  random.trust_cpu=off
+  randomize_kstack_offset=on
+  reg_file_data_sampling=on
+  slab_nomerge
+  slub_debug=ZF
+  spec_rstack_overflow=safe-ret
+  spec_store_bypass_disable=on
+  spectre_bhi=on
+  spectre_v2=on
+  tsx=off
+  tsx_async_abort=full,nosmt
+  vsyscall=none
+  page_poison=1
+  ftrace=off
+  lsm=lockdown,yama,selinux,bpf
 )
+for a in "${args[@]}"; do
+  rpm-ostree kargs --append-if-missing="$a" || true
+done
 
-kargs_str=$(IFS=" "; echo "${kargs[*]}")
-rpm-ostree kargs --append-if-missing="$kargs_str" > /dev/null
+# Optional toggles
+if [ -f /etc/system-fips ] || [ -f /etc/cipherblue/fips.enabled ]; then
+  rpm-ostree kargs --append-if-missing=fips=1 || true
+fi
+if [ -f /etc/cipherblue/ima.enforce ]; then
+  rpm-ostree kargs --append-if-missing=ima_appraise=enforce || true
+fi'
+
+sudo systemctl reboot
 ```
+
+Option B — Apply before rebasing (optional):
+
+- Run the same snippet above on your current rpm-ostree system, then perform the rebase. Reboot to apply.
 
 ## Privacy Mode
 
@@ -187,7 +204,7 @@ Assess a service:
 
 ## Kernel and Sysctl Hardening
 
-- Kernel arguments are applied at build via `files/scripts/kernel-kargs.sh`.
+- Kernel arguments: apply locally as described in Kernel Parameter Hardening.
 - Sysctl: strict ICMP/TCP settings, IPv4/IPv6 forwarding off, io_uring disabled, ptrace/perf restricted, `kernel.kexec_file_load_only=1`.
 - `fs.binfmt_misc` is disabled via udev rule when the module appears.
 
