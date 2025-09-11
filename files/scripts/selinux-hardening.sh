@@ -19,6 +19,7 @@ cd ../..
 semodule -i ./selinux/user_namespace/grant_userns.cil
 semodule -i ./selinux/user_namespace/harden_userns.cil
 semodule -i ./selinux/user_namespace/harden_container_userns.cil
+semodule -i ./selinux/user_namespace/deny_userdomains_userns.cil
 semodule -i ./selinux/flatpakfull/grant_systemd_flatpak_exec.cil
 
 semodule -i ./selinux/user_namespace/deny_unconfined_blk_file_relabels.cil

@@ -1,0 +1,5 @@
+# Block execution originating from mutable locations outright
+deny perm=execute all : dir=/home
+deny perm=execute all : dir=/tmp
+deny perm=execute all : dir=/var/tmp
+

@@ -1,2 +1,5 @@
 (allow colord_t self (user_namespace (create)))
 (allow devicekit_power_t self (user_namespace (create)))
+(allow flatpak_t self (user_namespace (create)))
+(allow trivalent_t self (user_namespace (create)))
+(allow trivalent_script_t self (user_namespace (create)))

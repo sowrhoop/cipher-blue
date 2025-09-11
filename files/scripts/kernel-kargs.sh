@@ -46,9 +46,21 @@ kargs=(
     page_poison=1
     ftrace=off
     lsm=lockdown,yama,selinux,bpf
+    ima=on
+    ima_template=ima-ng
+    ima_hash=sha256
+    ima_appraise=log
 )
 
 if command -v rpm-ostree >/dev/null 2>&1; then
   kargs_str=$(IFS=" "; echo "${kargs[*]}")
   rpm-ostree kargs --append-if-missing="$kargs_str" >/dev/null
+  # Enable FIPS mode if configured
+  if [ -f /etc/system-fips ] || [ -f /etc/cipherblue/fips.enabled ]; then
+    rpm-ostree kargs --append-if-missing=fips=1 >/dev/null || true
+  fi
+  # Switch IMA appraisal to enforce if opted-in
+  if [ -f /etc/cipherblue/ima.enforce ]; then
+    rpm-ostree kargs --append-if-missing=ima_appraise=enforce >/dev/null || true
+  fi
 fi

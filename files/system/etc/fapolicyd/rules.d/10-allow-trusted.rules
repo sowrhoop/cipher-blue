@@ -1,0 +1,3 @@
+# Allow anything that is trusted via rpmdb (i.e., packaged content)
+allow perm=any all : all trust=1
+

@@ -11,6 +11,8 @@ modules:
         - hardened_malloc
         - run0edit
         - usbguard
+        - unbound
+        - fapolicyd
     - type: script
       scripts:
         - httpsmirrors.sh
@@ -43,5 +45,6 @@ modules:
         - systemd-hardening.sh
         - suid-hardening.sh
         - dconf-compile.sh
+        - ima-setup.sh
     - type: cipherblue-signing
       source: local

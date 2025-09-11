@@ -1,0 +1,15 @@
+[Unit]
+Description=Harden /proc to hide processes from other users
+DefaultDependencies=no
+After=local-fs.target
+Before=multi-user.target
+ConditionPathIsMountPoint=/proc
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/mount -o remount,hidepid=2,gid=proc /proc
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+

@@ -1,0 +1,27 @@
+# CipherBlue IMA policy: measure widely, appraise critical execs
+
+# Measure all executed files and executable mmaps
+measure func=BPRM_CHECK mask=MAY_EXEC
+measure func=MMAP_CHECK mask=MAY_EXEC
+
+# Measure firmware, kernel modules, and kexec payloads
+measure func=FIRMWARE_CHECK
+measure func=MODULE_CHECK
+measure func=KEXEC_KERNEL_CHECK
+measure func=KEXEC_INITRAMFS_CHECK
+
+# Appraise kernel modules with either IMA sig or kernel modsig
+appraise func=MODULE_CHECK appraise_type=imasig|modsig
+
+# Appraise execution and executable mmaps for root-owned files (system content)
+appraise func=BPRM_CHECK mask=MAY_EXEC fowner=0 appraise_type=imasig
+appraise func=MMAP_CHECK mask=MAY_EXEC fowner=0 appraise_type=imasig
+
+# (Legacy) additionally appraise when executed by uid=0
+appraise func=BPRM_CHECK mask=MAY_EXEC uid=0 appraise_type=imasig
+appraise func=MMAP_CHECK mask=MAY_EXEC uid=0 appraise_type=imasig
+
+# Appraise firmware and kexec payloads
+appraise func=FIRMWARE_CHECK appraise_type=imasig
+appraise func=KEXEC_KERNEL_CHECK appraise_type=imasig
+appraise func=KEXEC_INITRAMFS_CHECK appraise_type=imasig
