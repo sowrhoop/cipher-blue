@@ -18,7 +18,7 @@ modules:
         - httpsmirrors.sh
         - package-hardening.sh
         - cipherblue-cleanup.sh
-        - selinux-hardening.sh
+        #- selinux-hardening.sh
         #- kernel-kargs.sh
     - type: rpm-ostree
       remove:
