@@ -12,8 +12,8 @@
 
 - Install or rebase to the latest image (see Installation).
 - First boot: existing USB devices are allowlisted and new devices are blocked (USBGuard).
-- Optional privacy mode: `systemctl enable --now cipher-privacy.target`.
-- Optional killswitch: edit `/etc/cipherblue/killswitch.conf`, then `systemctl enable --now cipher-killswitch.service`.
+- Privacy mode is enabled by default (camera/mic/radios blocked) and the VPN killswitch enforces egress via VPN interfaces only.
+- To temporarily allow non-VPN networking, set `DISABLED=1` in `/etc/cipherblue/killswitch.conf` and `systemctl restart cipher-killswitch.service`.
 - Verify hardening (see Verification).
 
 ## Hardened Defaults
@@ -104,26 +104,27 @@ rpm-ostree kargs --append-if-missing="$kargs_str" > /dev/null
 
 ## Privacy Mode
 
-Cipherblue includes an optional privacy mode target that blocks camera/microphone drivers, disables Bluetooth/WWAN radios, and enables the VPN killswitch.
+Cipherblue’s privacy mode is enabled by default. It blocks camera/microphone drivers, disables Bluetooth/WWAN radios, and pulls in the VPN killswitch.
 
-- Enable (persist across reboots):
-  - `systemctl enable --now cipher-privacy.target`
-- Disable and revert:
+- Disable and revert (persist across reboots):
   - `systemctl disable --now cipher-privacy.target`
+- Re-enable:
+  - `systemctl enable --now cipher-privacy.target`
 - What it does:
   - Runtime-blacklists modules `uvcvideo`, `snd_usb_audio`, `snd_hda_intel`, `v4l2loopback` in `/run/modprobe.d/cipher-privacy.conf` and attempts to unload them
   - `rfkill block bluetooth` and `rfkill block wwan`
   - Pulls in `cipher-killswitch.service`
 
-## VPN Killswitch (opt-in)
+## VPN Killswitch
 
-Blocks all outbound traffic except through loopback and allowed VPN interfaces.
+Blocks all outbound traffic except through loopback and allowed VPN interfaces. Enabled by default.
 
 - Configure allowed interfaces:
   - Edit `/etc/cipherblue/killswitch.conf` (default: `ALLOWED_IFACES="wg0 tun0 tap0"`).
 - Enable/disable:
   - `systemctl enable --now cipher-killswitch.service`
   - `systemctl disable --now cipher-killswitch.service`
+  - Quick override without disabling: set `DISABLED=1` in `/etc/cipherblue/killswitch.conf` and `systemctl restart cipher-killswitch.service`.
 - Verify:
   - `nft list table inet cipher_ks`
 
@@ -144,7 +145,7 @@ USBGuard is installed and initialized safely on first boot.
 - Portals:
   - GNOME ScreenCast / RemoteDesktop portals disabled (`/usr/share/xdg-desktop-portal/gnome-portals.conf`).
 - NetworkManager:
-  - Connectivity checks disabled (`/etc/NetworkManager/conf.d/50-disable-connectivity.conf`).
+  - Connectivity checks disabled (`/etc/NetworkManager/conf.d/99-disable-connectivity.conf`).
 - Tracker indexer:
   - Disabled via dconf with locks.
 - Compile dconf database (if adjusting locally):
@@ -270,4 +271,3 @@ semanage login -m -s user_u -r s0 __default__
 semanage login -m -s sysadm_u -r s0 root
 semanage login -a -s sysadm_u -r s0 sysadmin
 ```
-

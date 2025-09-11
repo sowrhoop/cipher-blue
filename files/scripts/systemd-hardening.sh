@@ -77,11 +77,16 @@ services=(
     fapolicyd
     unbound
     cipher-ima-keys.service
+    cipher-privacy.target
+    cipher-killswitch.service
 )
 
 for service in "${services[@]}"; do
         systemctl enable "$service" > /dev/null
 done
+
+# Start path unit to enforce /run/user/* noexec on creation
+systemctl enable cipher-run-user-sweep.path > /dev/null
 
 systemctl --global enable cipher-user-flatpak-updater.service
 
