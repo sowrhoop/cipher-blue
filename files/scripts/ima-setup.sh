@@ -11,11 +11,11 @@ DER=$KEYDIR/ima.der
 
 install -d -m 0700 "$KEYDIR"
 
-if [ ! -f "$DER" ]; then
+if [ ! -f "$DER" ] && command -v openssl >/dev/null 2>&1; then
   openssl req -x509 -newkey rsa:4096 -nodes \
     -subj "/CN=CipherBlue IMA/" \
-    -keyout "$KEY" -out "$CRT" -days 3650 -sha256
-  openssl x509 -in "$CRT" -outform der -out "$DER"
+    -keyout "$KEY" -out "$CRT" -days 3650 -sha256 || true
+  openssl x509 -in "$CRT" -outform der -out "$DER" || true
 fi
 
 # Sign root-owned files across core system directories to satisfy fowner=0 appraisal
@@ -33,6 +33,6 @@ if command -v evmctl >/dev/null 2>&1; then
 fi
 
 # Remove private key from the image
-shred -u -z "$KEY" || rm -f "$KEY" || true
+shred -u -z "$KEY" 2>/dev/null || rm -f "$KEY" || true
 
 exit 0

@@ -18,7 +18,7 @@ modules:
         - httpsmirrors.sh
         - package-hardening.sh
         - cipherblue-cleanup.sh
-        #- selinux-hardening.sh
+        - selinux-hardening.sh
         #- kernel-kargs.sh
     - type: rpm-ostree
       remove:
@@ -40,7 +40,7 @@ modules:
     - type: script
       scripts:
         - cipherblue-cleanup.sh
-        - authselect-hardening.sh
+        #- authselect-hardening.sh
         - permission-hardening.sh
         - systemd-hardening.sh
         - suid-hardening.sh

@@ -2,6 +2,9 @@
 
 set -oue pipefail
 
+# Operate on systemd units without a running init
+export SYSTEMD_OFFLINE=1
+
 services=(
     abrt-journal-core.service
     abrt-oops.service
@@ -62,8 +65,8 @@ services=(
 )
 
 for service in "${services[@]}"; do
-        systemctl disable "$service" > /dev/null
-        systemctl mask "$service" > /dev/null
+        systemctl disable "$service" > /dev/null 2>&1 || true
+        systemctl mask "$service" > /dev/null 2>&1 || true
 done
 
 services=(
@@ -82,13 +85,13 @@ services=(
 )
 
 for service in "${services[@]}"; do
-        systemctl enable "$service" > /dev/null
+        systemctl enable "$service" > /dev/null 2>&1 || true
 done
 
 # Start path unit to enforce /run/user/* noexec on creation
-systemctl enable cipher-run-user-sweep.path > /dev/null
+systemctl enable cipher-run-user-sweep.path > /dev/null 2>&1 || true
 
-systemctl --global enable cipher-user-flatpak-updater.service
+systemctl --global enable cipher-user-flatpak-updater.service 2>/dev/null || true
 
 # Generate sandbox drop-ins for most system services (safe defaults)
 units_dir="/usr/lib/systemd/system"
