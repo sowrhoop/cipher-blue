@@ -22,6 +22,8 @@ lock_file /etc/unbound/unbound.conf
 lock_file /etc/containers/policy.json
 lock_file /etc/ld.so.preload
 lock_file /etc/default/useradd
+# Kernel module hardening
+lock_file /etc/modprobe.d/99-cipherblue-hardening.conf
 # Network egress policy
 lock_file /etc/cipherblue/killswitch.conf
 # USB and execution control
@@ -31,5 +33,7 @@ lock_file /etc/fapolicyd/fapolicyd.conf
 for f in /etc/fapolicyd/rules.d/*.rules; do lock_file "$f"; done
 # Local TTY control
 lock_file /etc/securetty
+# Firewalld zone overrides
+lock_file /etc/firewalld/zones/FedoraWorkstation.xml
 
 exit 0

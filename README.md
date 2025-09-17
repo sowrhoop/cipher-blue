@@ -28,6 +28,23 @@
 - VPN killswitch (opt-in): nftables drops all egress except VPN interfaces.
 - Kernel args: strict mitigations, IOMMU hardening, nosmt options, page poisoning, tracing off (apply locally; see Kernel Parameter Hardening).
 
+### GrapheneOS Security Model Mapping
+
+- Principle: minimize attack surface
+  - Implemented via service masking, strict sysctls, USBGuard, and new kernel module blacklists in `files/system/etc/modprobe.d/99-cipherblue-hardening.conf` (disables uncommon net protocols and legacy filesystems by default).
+- Principle: strong sandboxing and least privilege
+  - Enforcing SELinux with additional policy, systemd sandboxing drop-ins, default-deny application execution (fapolicyd), and Flatpak/portal lockdowns.
+- Principle: hardened memory and exploit mitigations
+  - System-wide `libhardened_malloc.so` preloaded, strict kernel/runtime sysctls, and aggressive SUID/SGID reduction.
+- Principle: verified system integrity
+  - OSTree image signature verification, IMA measurement/appraisal policy (`/etc/ima/ima-policy`), and initramfs integration.
+- Principle: privacy controls and toggles
+  - Camera/microphone/radio blocking (Cipher Privacy target), MAC randomization and DNS via local Unbound; logs stored in memory only.
+
+Limitations vs GrapheneOS (Android-specific features):
+- Hardware-backed keystore / per-app sandbox permissions, memory tagging (MTE), and exec spawning are Android/Pixel specific. Cipherblue approximates the model with SELinux, Flatpak portals, hardened allocator, and default-deny execution.
+- Verified boot chain-of-trust depends on platform Secure Boot + TPM; enable these on your hardware. IMA appraisal is available and recommended.
+
 ## Account Model (Zero-Trust)
 
 - Admin account: `sysadmin` is created at boot (home `/home/sysadmin`). It has a minimal PolicyKit allowlist for routine admin tasks.

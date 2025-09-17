@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<zone>
+<zone target="DROP">
   <short>Fedora Workstation</short>
-  <description>Overriden default config</description>
-  <forward/>
+  <description>Hardened: drop unsolicited inbound, no forwarding</description>
+  <!-- No services are allowed here; default zone is set to 'drop' separately. -->
+  <!-- Forwarding disabled by default; routing handled explicitly when needed. -->
 </zone>
