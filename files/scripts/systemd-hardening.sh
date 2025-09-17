@@ -95,8 +95,13 @@ systemctl enable cipher-run-user-sweep.path > /dev/null 2>&1 || true
 
 systemctl --global enable cipher-user-flatpak-updater.service 2>/dev/null || true
 
-# Generate sandbox drop-ins for most system services (safe defaults)
-units_dir="/usr/lib/systemd/system"
+# Generate sandbox drop-ins for all eligible system services (safe defaults)
+# Scan common unit directories to catch vendor and local units
+unit_dirs=(
+    "/usr/lib/systemd/system"
+    "/etc/systemd/system"
+    "/lib/systemd/system"
+)
 dropin_name="50-cipherblue-sandbox.conf"
 exclude_prefixes=(
     "systemd-"
@@ -129,38 +134,46 @@ exclude_units=(
 
 mkdir -p /etc/systemd/system
 
-for unit in "$units_dir"/*.service; do
-    [ -e "$unit" ] || continue
-    unit_name="$(basename "$unit")"
-
-    # Skip templated units and critical systemd internal units
-    if [[ "$unit_name" == *"@.service" ]]; then
-        continue
-    fi
-    skip=false
-    for p in "${exclude_prefixes[@]}"; do
-        if [[ "$unit_name" == "$p"* ]]; then
-            skip=true
-            break
+# Deduplicate by unit name across directories
+declare -A seen_units
+for dir in "${unit_dirs[@]}"; do
+    [ -d "$dir" ] || continue
+    for unit in "$dir"/*.service; do
+        [ -e "$unit" ] || continue
+        unit_name="$(basename "$unit")"
+        # Skip templated units and critical systemd internal units
+        if [[ "$unit_name" == *"@.service" ]]; then
+            continue
         fi
-    done
-    for u in "${exclude_units[@]}"; do
-        if [[ "$unit_name" == "$u" ]]; then
-            skip=true
-            break
+        if [[ -n "${seen_units[$unit_name]:-}" ]]; then
+            continue
         fi
-    done
-    if $skip; then
-        continue
-    fi
+        seen_units[$unit_name]=1
 
-    d="/etc/systemd/system/${unit_name}.d"
-    # If a curated drop-in already exists, skip auto drop-in to avoid conflicts
-    if [ -d "$d" ] && ls "$d"/*.conf >/dev/null 2>&1; then
-        continue
-    fi
-    mkdir -p "$d"
-    cat >"$d/$dropin_name" <<'EOF'
+        skip=false
+        for p in "${exclude_prefixes[@]}"; do
+            if [[ "$unit_name" == "$p"* ]]; then
+                skip=true
+                break
+            fi
+        done
+        for u in "${exclude_units[@]}"; do
+            if [[ "$unit_name" == "$u" ]]; then
+                skip=true
+                break
+            fi
+        done
+        if $skip; then
+            continue
+        fi
+
+        d="/etc/systemd/system/${unit_name}.d"
+        # If a curated drop-in already exists, skip auto drop-in to avoid conflicts
+        if [ -d "$d" ] && ls "$d"/*.conf >/dev/null 2>&1; then
+            continue
+        fi
+        mkdir -p "$d"
+        cat >"$d/$dropin_name" <<'EOF'
 [Service]
 # Minimal baseline unlikely to break services; curated drop-ins handle more.
 NoNewPrivileges=yes
@@ -171,4 +184,23 @@ RestrictRealtime=true
 SystemCallArchitectures=native
 UMask=0077
 EOF
+    done
+done
+
+# Ensure excluded-but-uncurated units still receive a minimal sandbox
+for unit_name in "${exclude_units[@]}"; do
+    d="/etc/systemd/system/${unit_name}.d"
+    if ! ls "$d"/*.conf >/dev/null 2>&1; then
+        mkdir -p "$d"
+        cat >"$d/$dropin_name" <<'EOF'
+[Service]
+# Minimal baseline for sensitive units when no curated drop-in exists
+NoNewPrivileges=yes
+ProtectClock=true
+ProtectControlGroups=true
+RestrictRealtime=true
+SystemCallArchitectures=native
+UMask=0077
+EOF
+    fi
 done
