@@ -22,5 +22,14 @@ lock_file /etc/unbound/unbound.conf
 lock_file /etc/containers/policy.json
 lock_file /etc/ld.so.preload
 lock_file /etc/default/useradd
+# Network egress policy
+lock_file /etc/cipherblue/killswitch.conf
+# USB and execution control
+lock_file /etc/usbguard/usbguard-daemon.conf
+lock_file /etc/usbguard/rules.conf
+lock_file /etc/fapolicyd/fapolicyd.conf
+for f in /etc/fapolicyd/rules.d/*.rules; do lock_file "$f"; done
+# Local TTY control
+lock_file /etc/securetty
 
 exit 0

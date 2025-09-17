@@ -53,6 +53,8 @@ services=(
     rpcbind
     rpm-ostree-countme.service
     rpm-ostree-countme.timer
+    getty@.service
+    serial-getty@.service
     smartd.service
     sshd
     sssd

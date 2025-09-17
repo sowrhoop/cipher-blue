@@ -37,7 +37,7 @@ modules:
     - type: script
       scripts:
         - cipherblue-cleanup.sh
-        #- authselect-hardening.sh
+        - authselect-hardening.sh
         - permission-hardening.sh
         - systemd-hardening.sh
         - suid-hardening.sh
