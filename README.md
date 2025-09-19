@@ -1,101 +1,148 @@
 <p align="center">
   <a href="https://github.com/sowrhoop/cipherblue">
-    <img src="https://github.com/sowrhoop/cipherblue/blob/main/files/system/usr/share/plymouth/themes/spinner/watermark.png" href="https://github.com/sowrhoop/cipherblue" width=200 />
+    <img src="files/system/usr/share/plymouth/themes/spinner/watermark.png" alt="Cipherblue" width="200" />
   </a>
 </p>
 
 <h1 align="center">CIPHERBLUE</h1>
 
-[![cipherblue](https://github.com/sowrhoop/cipherblue/actions/workflows/build.yml/badge.svg)](https://github.com/sowrhoop/cipherblue/actions/workflows/build.yml)
+[![Build Status](https://github.com/sowrhoop/cipherblue/actions/workflows/build.yml/badge.svg)](https://github.com/sowrhoop/cipherblue/actions/workflows/build.yml)
+
+Security- and privacy-hardened Fedora Silverblue derivative for desktops, built as an ostree container image. Cipherblue applies a defense-in-depth model inspired by GrapheneOS: strict system hardening, least-privilege defaults, privacy toggles, and verifiable supply-chain signing.
+
+## Table of Contents
+
+- Quick Start
+- What You Get
+- Security Model
+- Accounts & Access
+- Installation
+- Kernel Parameter Hardening
+- Privacy Mode
+- VPN Killswitch
+- USB Device Control
+- GNOME & Portals
+- Systemd & Logging
+- Kernel & Sysctls
+- Verification
+- Notes & Opt-Outs
+- Build Locally
+- Troubleshooting
+- Contributing & License
 
 ## Quick Start
 
-- Install or rebase to the latest image (see Installation).
-- First boot: existing USB devices are allowlisted and new devices are blocked (USBGuard).
-- Privacy mode is enforced (camera/mic/radios blocked) and the VPN killswitch enforces egress via VPN interfaces only.
-- Verify hardening (see Verification).
+- Rebase to the latest image (see Installation).
+- First boot: existing USB devices are allow-listed; new devices are blocked (USBGuard).
+- Privacy mode is enforced (camera/mic/radios blocked). VPN killswitch restricts egress to VPN interfaces.
+- Verify hardening (see Verification) and adjust optional toggles as needed.
 
-## Hardened Defaults
+## What You Get
 
-- Hardened allocator: preloads `libhardened_malloc.so` globally via `/etc/ld.so.preload`.
-- Initramfs hardening: omits FireWire and Thunderbolt (`/etc/dracut.conf.d/99-omitfirewire.conf`, `99-omitthunderbolt.conf`).
-- Module lockdown: disables `fs.binfmt_misc` on load via udev (`/etc/udev/rules.d/cipherblue.rules`).
-- Network hardening: IPv4/IPv6 forwarding off by default; strict ICMP/TCP; IPv6 privacy; connectivity checks disabled.
-- Framebuffer hardening: legacy drivers denied in `/etc/modprobe.d/cipherblue-blacklist.conf`.
-- Journald privacy: volatile logs with tight limits (`/etc/systemd/journald.conf.d/60-cipherblue-privacy.conf`).
-- Systemd sandboxing: curated drop-ins for core services plus a safe baseline for others.
-- USB control: USBGuard blocks new devices after first-boot allowlisting.
-- VPN killswitch (opt-in): nftables drops all egress except VPN interfaces.
-- Kernel args: strict mitigations, IOMMU hardening, nosmt options, page poisoning, tracing off (apply locally; see Kernel Parameter Hardening).
+- Hardened allocator: preloads `libhardened_malloc.so` via `/etc/ld.so.preload`.
+- Initramfs hardening: FireWire/Thunderbolt omitted (`/etc/dracut.conf.d/`).
+- Module lockdown: `fs.binfmt_misc` disabled on load (`/etc/udev/rules.d/cipherblue.rules`).
+- Network hardening: IPv4/IPv6 forwarding off; strict ICMP/TCP; IPv6 privacy; connectivity checks disabled.
+- Kernel module policies: uncommon protocols and legacy filesystems denied (`/etc/modprobe.d/99-cipherblue-hardening.conf`, `cipherblue-blacklist.conf`).
+- Journald privacy: in-memory logs with tight quotas (`/etc/systemd/journald.conf.d/60-cipherblue-privacy.conf`).
+- Systemd sandboxing: curated hardening for core units; safe baseline drop-ins for others.
+- USB control: first-boot allow-listing + default block (USBGuard).
+- VPN killswitch: nftables default-deny egress except VPN interfaces.
+- Kernel args: strong mitigations (apply locally; see Kernel Parameter Hardening).
 
-### GrapheneOS Security Model Mapping
+## Security Model
 
-- Principle: minimize attack surface
-  - Implemented via service masking, strict sysctls, USBGuard, and new kernel module blacklists in `files/system/etc/modprobe.d/99-cipherblue-hardening.conf` (disables uncommon net protocols and legacy filesystems by default).
-- Principle: strong sandboxing and least privilege
-  - Enforcing SELinux with additional policy, systemd sandboxing drop-ins, default-deny application execution (fapolicyd), and Flatpak/portal lockdowns.
-- Principle: hardened memory and exploit mitigations
-  - System-wide `libhardened_malloc.so` preloaded, strict kernel/runtime sysctls, and aggressive SUID/SGID reduction.
-- Principle: verified system integrity
-  - OSTree image signature verification, IMA measurement/appraisal policy (`/etc/ima/ima-policy`), and initramfs integration.
-- Principle: privacy controls and toggles
-  - Camera/microphone/radio blocking (Cipher Privacy target), MAC randomization and DNS via local Unbound; logs stored in memory only.
+GrapheneOS-inspired principles applied to Fedora:
+
+- Minimize attack surface
+  - Service masking, strict sysctls, USBGuard, kernel module blacklists (`/etc/modprobe.d/99-cipherblue-hardening.conf`).
+- Strong sandboxing and least privilege
+  - Enforcing SELinux with extra policy, systemd sandbox drop-ins, default-deny execution (fapolicyd), Flatpak/portal lockdowns.
+- Hardened memory and mitigations
+  - System‑wide hardened_malloc, strict kernel/runtime sysctls, aggressive SUID/SGID reduction.
+- Verified system integrity
+  - Image signature verification (cosign attachments), optional IMA measurement/appraisal (`/etc/ima/ima-policy`).
+- Privacy controls and toggles
+  - Cipher Privacy target blocks camera/mic/radios; MAC randomization; local DNS via Unbound; volatile logs.
 
 Limitations vs GrapheneOS (Android-specific features):
-- Hardware-backed keystore / per-app sandbox permissions, memory tagging (MTE), and exec spawning are Android/Pixel specific. Cipherblue approximates the model with SELinux, Flatpak portals, hardened allocator, and default-deny execution.
-- Verified boot chain-of-trust depends on platform Secure Boot + TPM; enable these on your hardware. IMA appraisal is available and recommended.
 
-## Account Model (Zero-Trust)
+- Hardware-backed keystore, per-app permissions, memory tagging (MTE), exec spawning are Android/Pixel specific. Cipherblue approximates with SELinux, Flatpak portals, hardened malloc, and default-deny execution.
+- Verified boot quality depends on Secure Boot + TPM on your platform. Enable them. IMA appraisal is available and recommended.
 
-- Admin account: `sysadmin` is created at boot (home `/home/sysadmin`). It has a minimal PolicyKit allowlist for routine admin tasks.
-- Other users: you can create additional users normally; they can log in and use the desktop, but have no PolicyKit privileges and cannot escalate (no `sudo`, `su`, or `pkexec`).
-- PAM access: interactive logins are permitted for local users by default. System/service accounts lacking a valid shell cannot log in.
-- Root: direct logins are disabled; use rescue media if emergency access is needed.
-- Rationale: all users are untrusted; only `sysadmin` has narrowly-scoped administrative rights.
+## Accounts & Access (Zero‑Trust)
 
-### Additional User Confinement
+- Admin account: `sysadmin` is created at boot (home `/home/sysadmin`) with a minimal PolicyKit allowlist for rpm‑ostree maintenance.
+- Other users: may log in locally for desktop use but cannot escalate (no `sudo`, `su`, `pkexec`); PolicyKit actions default to deny.
+- PAM access: interactive logins are permitted for local users by default; system/service accounts without valid shells cannot log in.
+- Root: direct logins are disabled; rescue media is required for emergencies.
+- Rationale: treat all users as untrusted; grant `sysadmin` narrow administrative capabilities only.
 
-- Sessions: user processes are killed on logout and IPC is cleaned (`logind.conf.d/50-killuser.conf`).
-- Rootless containers: disabled by default via `Delegate=no` on `user@.service` (blocks unprivileged container managers).
+Additional confinement:
+
+- Sessions: user processes are killed on logout and IPC is cleaned (`/etc/systemd/logind.conf.d/50-killuser.conf`).
+- Rootless containers: disabled by default via delegation restrictions on `user@.service`.
 - Unprivileged user namespaces: disabled (`kernel.unprivileged_userns_clone=0`).
-- Per-user resources: conservative `nproc`/`nofile` caps applied via `limits.d/60-cipherblue.conf`.
-- SSH: remote login limited to `sysadmin` only; others can log in locally.
+- Per-user resources: conservative nproc/nofile caps (`/etc/security/limits.d/60-cipherblue.conf`).
+- SSH: remote login effectively limited to `sysadmin` (others receive `nologin`).
 
-### Minimal Admin Capability (sysadmin only)
+Minimal admin capability (sysadmin only):
 
-- Only three rpm-ostree PolicyKit actions are permitted for `sysadmin` and require authentication:
+- Allowed PolicyKit actions (auth required):
   - `org.projectatomic.rpmostree1.bootconfig`
   - `org.projectatomic.rpmostree1.cleanup`
   - `org.projectatomic.rpmostree1.rebase`
-- All other PolicyKit actions are denied by default for every user, including `sysadmin`.
-- Root account is locked and has a nologin shell (`cipher-lock-root.service`).
+- All other PolicyKit actions denied for everyone.
+- Root account locked with `cipher-lock-root.service` and restricted shells enforced.
+
+Terminal access policy:
+
+- Non-admin users: login shell is `nologin` by default and enforced at boot for existing accounts (UID >= 1000). Terminal emulators cannot spawn a shell.
+- Admin user (`sysadmin`): restricted console allowing only `rpm-ostree` and `flatpak` (plus `exit`/`help`). Remote SSH permitted only for `sysadmin`.
+- Virtual consoles: not restricted to a single TTY, but only `sysadmin` can authenticate into a shell. Others receive `nologin`.
+- New users: `useradd` defaults to `SHELL=/usr/sbin/nologin`.
 
 ## Installation
 
-To rebase an existing atomic Fedora installation to the latest build:
+Rebase an existing Fedora Atomic (e.g., Silverblue) installation to Cipherblue:
 
-- First upgrade to latest Fedora version:
-  - `rpm-ostree upgrade`
-- Reboot to complete the upgrade:
-  - `systemctl reboot`
-- First rebase to the unsigned image, to get the proper signing keys and policies installed:
-  - `rpm-ostree rebase ostree-unverified-registry:ghcr.io/sowrhoop/cipherblue:latest`
-- Reboot to complete the rebase:
-  - `systemctl reboot`
-- Then rebase to the signed image:
-  - `rpm-ostree rebase ostree-image-signed:docker://ghcr.io/sowrhoop/cipherblue:latest`
-- Reboot again to complete the installation:
-  - `systemctl reboot`
+1) Upgrade Fedora first
 
-The `latest` tag always points to the newest build.
-
-### Kernel Parameter Hardening
-
-Hardened kernel arguments are not injected during the image build to keep CI and containerized builds stable. Apply them on your machine either right after installing/rebasing (recommended) or beforehand on your current rpm-ostree system. The settings persist across future deployments.
-
-Option A — Apply after install/rebase (recommended):
-
+```bash
+rpm-ostree upgrade
+systemctl reboot
 ```
+
+2) Bootstrap signing policy (one-time): rebase to the unsigned tag
+
+```bash
+rpm-ostree rebase ostree-unverified-registry:ghcr.io/sowrhoop/cipherblue:latest
+systemctl reboot
+```
+
+3) Rebase to the signed image
+
+```bash
+rpm-ostree rebase ostree-image-signed:docker://ghcr.io/sowrhoop/cipherblue:latest
+systemctl reboot
+```
+
+The `latest` tag points to the newest build. Future updates arrive via `rpm-ostree upgrade`.
+
+To revert: rebase back to upstream Silverblue (adjust to your preferred upstream)
+
+```bash
+rpm-ostree rebase ostree-image-signed:docker://quay.io/fedora/fedora-silverblue:latest
+systemctl reboot
+```
+
+## Kernel Parameter Hardening
+
+Kernel args are applied locally (not injected during CI image builds). They persist across deployments.
+
+Option A - apply after install/rebase (recommended):
+
+```bash
 sudo bash -euo pipefail -c '
 args=(
   amd_iommu=force_isolation
@@ -156,184 +203,172 @@ fi'
 sudo systemctl reboot
 ```
 
-Option B — Apply before rebasing (optional):
-
-- Run the same snippet above on your current rpm-ostree system, then perform the rebase. Reboot to apply.
+Option B - apply before rebasing (optional): run the same snippet on your current rpm-ostree system, then rebase. Reboot to apply.
 
 ## Privacy Mode
 
-Cipherblue privacy is enforced. It blocks camera/microphone drivers, disables Bluetooth/WWAN radios, and pulls in the VPN killswitch.
+Cipher Privacy is enforced at boot: blocks camera/mic drivers, disables Bluetooth/WWAN radios, and pulls in the VPN killswitch.
 
-- What it does:
-  - Runtime-blacklists modules `uvcvideo`, `snd_usb_audio`, `snd_hda_intel`, `v4l2loopback` in `/run/modprobe.d/cipher-privacy.conf` and attempts to unload them
-  - `rfkill block bluetooth` and `rfkill block wwan`
-  - Pulls in `cipher-killswitch.service`
+- Runtime-blacklists `uvcvideo`, `snd_usb_audio`, `snd_hda_intel`, `v4l2loopback` via `/run/modprobe.d/cipher-privacy.conf` (unloads if present).
+- Runs `rfkill block bluetooth` and `rfkill block wwan`.
+- Pulls in `cipher-killswitch.service`.
+
+Disable temporarily by stopping `cipher-privacy.target` (not recommended); persistent enforcement is the default.
 
 ## VPN Killswitch
 
-Blocks all outbound traffic except through loopback and allowed VPN interfaces. Enforced.
+Default-deny outbound traffic except loopback and allowed VPN interfaces.
 
-- Configure allowed interfaces:
-  - Edit `/etc/cipherblue/killswitch.conf` (default: `ALLOWED_IFACES="wg0 tun0 tap0"`).
-- Enable/disable:
-  - `systemctl enable --now cipher-killswitch.service`
-  - `systemctl disable --now cipher-killswitch.service`
-  - There is no override or disable switch.
-- Verify:
-  - `nft list table inet cipher_ks`
+- Configure interfaces: edit `/etc/cipherblue/killswitch.conf` (default `ALLOWED_IFACES="wg0 tun0 tap0"`).
+- Enable/disable: `systemctl enable --now cipher-killswitch.service` / `systemctl disable --now cipher-killswitch.service`.
+- Verify rules: `nft list table inet cipher_ks`.
 
 ## USB Device Control
 
-USBGuard is installed and initialized safely on first boot.
+USBGuard initializes safely on first boot.
 
-- First boot:
-  - `cipher-usbguard-setup.service` generates `/etc/usbguard/rules.conf` from currently attached devices and enables `usbguard-daemon`.
-- Manage rules:
-  - Regenerate: `rm -f /etc/usbguard/rules.conf && systemctl start cipher-usbguard-setup.service`
-  - Inspect: `usbguard list-devices`, `usbguard list-rules`
+- First boot: `cipher-usbguard-setup.service` generates `/etc/usbguard/rules.conf` from present devices and enables `usbguard-daemon`.
+- Regenerate rules: `rm -f /etc/usbguard/rules.conf && systemctl start cipher-usbguard-setup.service`.
+- Inspect: `usbguard list-devices`, `usbguard list-rules`.
 
-## GNOME Lockdown
+## GNOME & Portals
 
-- Dconf defaults and locks enforce:
-  - Camera/microphone disabled; immediate screen lock with idle lock; no lock-screen notifications; external search providers disabled.
-- Portals:
-  - GNOME ScreenCast / RemoteDesktop portals disabled (`/usr/share/xdg-desktop-portal/gnome-portals.conf`).
-- NetworkManager:
-  - Connectivity checks disabled (`/etc/NetworkManager/conf.d/99-disable-connectivity.conf`).
-- Tracker indexer:
-  - Disabled via dconf with locks.
-- Compile dconf database (if adjusting locally):
-  - `sudo dconf update`
+- Dconf defaults and locks: camera/mic disabled; immediate lock; no lock-screen notifications; external search providers disabled.
+- Portals: GNOME ScreenCast / RemoteDesktop disabled (`/usr/share/xdg-desktop-portal/gnome-portals.conf`).
+- NetworkManager: connectivity checks disabled (`/etc/NetworkManager/conf.d/99-disable-connectivity.conf`).
+- Tracker indexer: disabled via dconf with locks. Rebuild dconf if adjusting locally: `sudo dconf update`.
 
-## Systemd Sandboxing
+## Systemd & Logging
 
-- Global defaults enable resource accounting, disable core dumps, set sane timeouts for system and user services.
-- Curated hardening for core services (drop-ins under `/etc/systemd/system/*/cipherblue.conf`).
-- Safe baseline for the rest is generated during build; curated units are excluded from auto-overrides.
+- Global defaults: resource accounting, no core dumps, sane timeouts for system/user services.
+- Curated hardening: drop-ins under `/etc/systemd/system/*/cipherblue.conf` for sensitive services; safe baseline for others generated at build.
+- Journald: in-memory logs, strict quotas (`/etc/systemd/journald.conf.d/60-cipherblue-privacy.conf`).
 
-Assess a service:
-- `systemd-analyze security <unit>`
+Assess a service: `systemd-analyze security <unit>`.
 
-## Logging Privacy
+## Kernel & Sysctls
 
-- Journald stores logs in memory only, with size/retention/rate limits.
-- Location: `/etc/systemd/journald.conf.d/60-cipherblue-privacy.conf`
-
-## Kernel and Sysctl Hardening
-
-- Kernel arguments: apply locally as described in Kernel Parameter Hardening.
-- Sysctl: strict ICMP/TCP settings, IPv4/IPv6 forwarding off, io_uring disabled, ptrace/perf restricted, `kernel.kexec_file_load_only=1`.
-- `fs.binfmt_misc` is disabled via udev rule when the module appears.
+- Kernel args: apply locally (see Kernel Parameter Hardening).
+- Sysctls: strict ICMP/TCP, forwarding off, io_uring disabled, ptrace/perf restricted, `kernel.kexec_file_load_only=1`.
+- `fs.binfmt_misc` disabled by udev rule when loaded.
 
 ## Verification
 
-- Allocator: `cat /etc/ld.so.preload`
-- Kargs: `rpm-ostree kargs | tr ' ' '\n' | sort`
-- Journald: `systemd-analyze cat-config systemd/journald.conf`
-- Sysctl: `sysctl kernel.io_uring_disabled`, `sysctl net.ipv4.ip_forward`, `sysctl net.ipv6.conf.all.forwarding`
-- USBGuard: `systemctl status usbguard-daemon`, `usbguard list-rules`
-- Killswitch: `nft list table inet cipher_ks`
-- Account policy:
-  - Login restriction: `grep -v '^#' /etc/security/access.conf`
-  - Sysadmin presence: `getent passwd sysadmin`
-  - Polkit: review rules in `/etc/polkit-1/rules.d/`
+- Allocator: `cat /etc/ld.so.preload` should reference `libhardened_malloc.so`.
+- Kargs: `rpm-ostree kargs | tr ' ' '\n' | sort`.
+- Journald: `systemd-analyze cat-config systemd/journald.conf`.
+- Sysctl: `sysctl kernel.io_uring_disabled`, `sysctl net.ipv4.ip_forward`, `sysctl net.ipv6.conf.all.forwarding`.
+- USBGuard: `systemctl status usbguard-daemon`, `usbguard list-rules`.
+- Killswitch: `nft list table inet cipher_ks`.
+- Account policy: `grep -v '^#' /etc/security/access.conf`, `getent passwd sysadmin`, review `/etc/polkit-1/rules.d/`.
 
-## Notes & Opt-Outs
+## Notes & Opt‑Outs
 
-- Hardened allocator: rarely, specific apps may misbehave. To disable system-wide, edit `/etc/ld.so.preload`.
-- Thunderbolt/FireWire: if you rely on them at boot, remove the dracut omissions under `/etc/dracut.conf.d/` and rebuild initramfs.
-- Connectivity checks: re-enable by deleting `/etc/NetworkManager/conf.d/50-disable-connectivity.conf`.
+- Hardened allocator: rarely, apps may misbehave. To disable system-wide, edit `/etc/ld.so.preload` (remove hardened_malloc).
+- Thunderbolt/FireWire: if needed at boot, remove dracut omissions in `/etc/dracut.conf.d/` and rebuild initramfs.
+- Connectivity checks: re-enable by removing `/etc/NetworkManager/conf.d/99-disable-connectivity.conf`.
 
-### Flatpak Hardening
+Flatpak hardening example:
 
-```
-flatpak remote-delete --system --force fedora
-flatpak remote-delete --system --force fedora-testing
-flatpak remote-delete --user --force fedora
-flatpak remote-delete --user --force fedora-testing
-flatpak remote-delete --system --force flathub
-flatpak remote-delete --user --force flathub
-flatpak uninstall --delete-data --all -y
-rm -rf /var/lib/flatpak/.removed
+```bash
+flatpak remote-delete --system --force fedora || true
+flatpak remote-delete --system --force fedora-testing || true
+flatpak remote-delete --user --force fedora || true
+flatpak remote-delete --user --force fedora-testing || true
+flatpak remote-delete --system --force flathub || true
+flatpak remote-delete --user --force flathub || true
+flatpak uninstall --delete-data --all -y || true
+rm -rf /var/lib/flatpak/.removed || true
 ```
 
-### Fstab Hardening
+Fstab hardening example:
 
-```
+```bash
 sed -i 's/zstd:1/zstd/g' /etc/fstab
 
 FILE="/etc/fstab"
-
 if ! grep -q 'x-systemd.device-timeout=0,nosuid,noexec,nodev,noatime' "$FILE"; then
-    sed -i -e 's/x-systemd.device-timeout=0/x-systemd.device-timeout=0,nosuid,noexec,nodev,noatime/' \
-           -e 's/shortname=winnt/shortname=winnt,nosuid,noexec,nodev,noatime/' \
-           -e 's/compress=zstd/compress=zstd,nosuid,noexec,nodev,noatime/' \
-           -e 's/defaults/defaults,nosuid,noexec,nodev,noatime/' "$FILE"
+  sed -i -e 's/x-systemd.device-timeout=0/x-systemd.device-timeout=0,nosuid,noexec,nodev,noatime/' \
+         -e 's/shortname=winnt/shortname=winnt,nosuid,noexec,nodev,noatime/' \
+         -e 's/compress=zstd/compress=zstd,nosuid,noexec,nodev,noatime/' \
+         -e 's/defaults/defaults,nosuid,noexec,nodev,noatime/' "$FILE"
 fi
 ```
 
-### Microcode Updates
+Microcode updates:
 
-```
+```bash
 fwupdmgr refresh --force
 fwupdmgr get-updates
 fwupdmgr update
 ```
 
-### Other Hardening
+Other system tweaks (optional):
 
-```
-# Cleanup Coredump
+```bash
+# Cleanup coredumps
 ulimit -c 0
-systemd-tmpfiles --clean 2> /dev/null
+systemd-tmpfiles --clean 2>/dev/null || true
 systemctl daemon-reload
 
-echo "coredump cleanup complete."
-
-# Disable System-Tracking
+# Disable system tracking identifiers
 hostnamectl set-hostname host
 new_machine_id="b08dfa6083e7567a1921a715000001fb"
-echo "$new_machine_id" | tee /etc/machine-id > /dev/null
-echo "$new_machine_id" | tee /var/lib/dbus/machine-id > /dev/null
+echo "$new_machine_id" | tee /etc/machine-id >/dev/null
+echo "$new_machine_id" | tee /var/lib/dbus/machine-id >/dev/null
 
-echo "system tracking disabled."
+# Block wireless devices (except Wi-Fi)
+rfkill block all || true
+rfkill unblock wifi || true
 
-# Block Wireless Devices
-rfkill block all
-rfkill unblock wifi
+# Lock down root
+passwd -l root || true
 
-# Lockdown Root
-passwd -l root
-
-# GNOME Hardening
-dconf update
-
-# GRUB Hardening
-grub2-setpassword
-
-echo "Hardening complete."
+# GNOME and GRUB hardening helpers
+dconf update || true
+grub2-setpassword || true
 ```
 
-### Secure Verified-FOSS Flatpak Repository
+Secure verified‑FOSS Flatpak repo:
 
-```
+```bash
 flatpak remote-add --if-not-exists --user --subset=verified_floss \
   flathub-verified-floss https://dl.flathub.org/repo/flathub.flatpakrepo
 ```
 
-### SELinux Confined Users (Experimental)
+SELinux confined users (experimental):
 
-```
+```bash
 semanage login -a -s user_u -r s0 gdm
 semanage login -m -s user_u -r s0 __default__
 semanage login -m -s sysadm_u -r s0 root
 semanage login -a -s sysadm_u -r s0 sysadmin
 ```
 
-### Terminal Access Policy
+## Build Locally
 
-- Non-admin users: login shell is set to 
-ologin by default and enforced at boot for existing accounts (UID >= 1000). Terminal emulators cannot spawn a shell.
-- Admin user (sysadmin): login shell is a restricted console allowing only pm-ostree and latpak commands (plus exit/help). Remote SSH remains permitted only for sysadmin.
-- Virtual consoles: not restricted to a single TTY, but only sysadmin can authenticate into a shell. Others receive nologin.
-- New users: useradd defaults to SHELL=/usr/sbin/nologin.
+This repository is built via GitHub Actions using the BlueBuild action. To build locally:
+
+Prerequisites: Podman (or Docker), and the BlueBuild CLI.
+
+```bash
+# Example with bluebuild (see https://github.com/blue-build/cli)
+bluebuild build recipes/cipherblue.yml
+```
+
+The recipe installs hardened_malloc, usbguard, unbound, and fapolicyd, removes unneeded packages, applies files under `files/system`, then signs the image with cosign metadata so rpm‑ostree can verify it.
+
+## Troubleshooting
+
+- App incompatibility with hardened_malloc: temporarily remove it from `/etc/ld.so.preload` to confirm; report upstream.
+- USB device blocked: review `usbguard list-devices` and adjust `/etc/usbguard/rules.conf` (regenerate via `cipher-usbguard-setup.service`).
+- No network egress: ensure your VPN interface matches `ALLOWED_IFACES` or temporarily disable `cipher-killswitch.service` for debugging.
+- Rebase issues: bootstrap using the unsigned tag first, then switch to the signed tag as shown in Installation.
+
+## Contributing & License
+
+Issues and PRs are welcome. Keep changes minimal, focused, and aligned with the hardening strategy. Shell scripts should use `set -euo pipefail` and avoid unnecessary complexity.
+
+Licensed under the GNU Affero General Public License v3. See `LICENSE`.
+
+Security notice: this project hardens a general‑purpose system. Test on non‑production machines first. No warranty.
