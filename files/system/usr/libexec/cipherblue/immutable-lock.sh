@@ -11,8 +11,9 @@ lock_file() {
 # Lock critical configuration to prevent tampering at runtime.
 lock_file /etc/security/access.conf
 for f in /etc/polkit-1/rules.d/*.rules; do lock_file "$f"; done
-lock_file /etc/ssh/ssh_config.d/10-cipherblue.conf
-lock_file /etc/ssh/sshd_config.d/10-cipherblue.conf
+# Lock SSH client/server policy drop-ins
+for f in /etc/ssh/ssh_config.d/*.conf; do lock_file "$f"; done
+for f in /etc/ssh/sshd_config.d/*.conf; do lock_file "$f"; done
 lock_file /etc/sysctl.d/60-cipherblue-hardening.conf
 lock_file /etc/systemd/logind.conf.d/50-killuser.conf
 lock_file /etc/systemd/journald.conf.d/60-cipherblue-privacy.conf

@@ -101,6 +101,7 @@ Terminal access policy:
 - Admin user (`sysadmin`): restricted console allowing only `rpm-ostree` and `flatpak` (plus `exit`/`help`). Remote SSH permitted only for `sysadmin`.
 - Virtual consoles: not restricted to a single TTY, but only `sysadmin` can authenticate into a shell. Others receive `nologin`.
 - New users: `useradd` defaults to `SHELL=/usr/sbin/nologin`.
+ - SSH server policy: `files/system/etc/ssh/sshd_config.d/99-cipherblue.conf` enforces key-only login, `AllowUsers sysadmin`, disables root login and forwarding, and tightens crypto/limits.
 
 ## Installation
 
@@ -186,6 +187,8 @@ args=(
   vsyscall=none
   page_poison=1
   ftrace=off
+  rd.shell=0
+  rd.emergency=halt
   lsm=lockdown,yama,selinux,bpf
 )
 for a in "${args[@]}"; do
