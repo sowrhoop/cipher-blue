@@ -139,7 +139,7 @@ systemctl reboot
 
 ## Kernel Parameter Hardening
 
-Kernel args are applied locally (not injected during CI image builds). They persist across deployments.
+Kernel args are included in-tree via bootc kargs (`/usr/lib/bootc/kargs.d/10-cipherblue.toml`) and applied when the image deploys. The snippet below remains for manual adjustment on existing systems or for additional toggles. They persist across deployments.
 
 Option A - apply after install/rebase (recommended):
 
