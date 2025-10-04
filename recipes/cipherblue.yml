@@ -39,7 +39,7 @@ modules:
         - cipherblue-cleanup.sh
         - authselect-hardening.sh
         - permission-hardening.sh
-        - systemd-hardening.sh
+        #- systemd-hardening.sh
         - suid-hardening.sh
         - dconf-compile.sh
         #- ima-setup.sh
