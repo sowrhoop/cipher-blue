@@ -74,8 +74,8 @@ done
 services=(
     cipher-capabilities
     cipher-cleaner
-    #cipher-remount
-    #proc-hidepid.service
+    cipher-remount
+    proc-hidepid.service
     fstrim.timer
     rpm-ostreed-automatic.timer
     tlp
