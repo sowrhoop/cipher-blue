@@ -38,10 +38,10 @@ modules:
       scripts:
         - cipherblue-cleanup.sh
         - authselect-hardening.sh
-        - permission-hardening.sh
+        # permission-hardening.sh
         #- systemd-hardening.sh
         - suid-hardening.sh
-        - dconf-compile.sh
+        #- dconf-compile.sh
         #- ima-setup.sh
     - type: cipherblue-signing
       source: local
