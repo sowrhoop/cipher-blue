@@ -18,6 +18,7 @@ lock_file /etc/systemd/logind.conf.d/50-killuser.conf
 lock_file /etc/systemd/journald.conf.d/60-cipherblue-privacy.conf
 lock_file /etc/NetworkManager/conf.d/60-cipherblue.conf
 lock_file /etc/NetworkManager/conf.d/99-disable-connectivity.conf
+lock_file /etc/dnscrypt-proxy/dnscrypt-proxy.toml
 lock_file /etc/unbound/unbound.conf
 lock_file /etc/containers/policy.json
 lock_file /etc/ld.so.preload

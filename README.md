@@ -63,7 +63,7 @@ GrapheneOS-inspired principles applied to Fedora:
 - Verified system integrity
   - Image signature verification (cosign attachments), optional IMA measurement/appraisal (`/etc/ima/ima-policy`).
 - Privacy controls and toggles
-  - Cipher Privacy target blocks camera/mic/radios; MAC randomization; local DNS via Unbound; volatile logs.
+  - Cipher Privacy target blocks camera/mic/radios; MAC randomization; local DNS via Unbound tunneled through DNS-over-HTTPS; volatile logs.
 
 Limitations vs GrapheneOS (Android-specific features):
 

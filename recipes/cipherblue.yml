@@ -10,6 +10,7 @@ modules:
         - hardened_malloc
         - usbguard
         - unbound
+        - dnscrypt-proxy
         - fapolicyd
     - type: script
       scripts:

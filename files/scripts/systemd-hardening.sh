@@ -79,6 +79,7 @@ services=(
     rpm-ostreed-automatic.timer
     tlp
     fapolicyd
+    dnscrypt-proxy
     unbound
     cipher-ima-keys.service
     cipher-privacy.target
