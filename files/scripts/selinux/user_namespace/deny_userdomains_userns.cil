@@ -1,4 +1,0 @@
-(deny user_t self (user_namespace (create)))
-(deny staff_t self (user_namespace (create)))
-(deny sysadm_t self (user_namespace (create)))
-
