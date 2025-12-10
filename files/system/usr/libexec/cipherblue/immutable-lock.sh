@@ -10,7 +10,10 @@ lock_file() {
 
 # Lock critical configuration to prevent tampering at runtime.
 lock_file /etc/security/access.conf
-for f in /etc/polkit-1/rules.d/*.rules; do lock_file "$f"; done
+
+# Use find to safely handle cases where no files match the pattern
+find /etc/polkit-1/rules.d -maxdepth 1 -type f -name '*.rules' -print0 | while IFS= read -r -d '' f; do lock_file "$f"; done
+
 lock_file /etc/ssh/ssh_config.d/10-cipherblue.conf
 lock_file /etc/ssh/sshd_config.d/10-cipherblue.conf
 lock_file /etc/sysctl.d/60-cipherblue-hardening.conf
@@ -30,7 +33,8 @@ lock_file /etc/cipherblue/killswitch.conf
 lock_file /etc/usbguard/usbguard-daemon.conf
 lock_file /etc/usbguard/rules.conf
 lock_file /etc/fapolicyd/fapolicyd.conf
-for f in /etc/fapolicyd/rules.d/*.rules; do lock_file "$f"; done
+
+find /etc/fapolicyd/rules.d -maxdepth 1 -type f -name '*.rules' -print0 | while IFS= read -r -d '' f; do lock_file "$f"; done
 # Local TTY control
 lock_file /etc/securetty
 # Firewalld zone overrides

@@ -1,48 +1,29 @@
-listen_addresses = ['127.0.0.1:5053']
-user_name = 'dnscrypt-proxy'
-max_clients = 250
+# Cipherblue hardened dnscrypt-proxy configuration
+# Strict DoH-only with Unix socket listener
 
-ipv4_servers = true
-ipv6_servers = false
-dnscrypt_servers = false
-doh_servers = true
-odoh_servers = false
+# Listen on a Unix socket instead of a network port
+listen_addresses = ['/run/dnscrypt-proxy/dnscrypt-proxy.sock']
 
+# Enforce strict DoH-only. Disable other protocols.
 require_dnssec = true
 require_nolog = true
 require_nofilter = true
+dnscrypt_servers = false
+dot_servers = false
+doh_servers = true
 
-disabled_server_names = []
-server_names = ['mullvad-doh', 'mullvad-all-doh']
+# Use a curated list of high-quality DoH servers.
+# This list can be customized as needed.
+server_names = ['cloudflare', 'google', 'quad9']
 
-fallback_resolver = '0.0.0.0:0'
-ignore_system_dns = true
-bootstrap_resolvers = []
+# Load balancing strategy
+lb_strategy = 'p2'
 
-netprobe_timeout = 0
-netprobe_address = ''
-
-blocked_query_response = 'refused'
-
-cert_refresh_delay = 86400
-keepalive = 240
-
+# Cache settings (can be minimal as Unbound is the primary cache)
 cache = true
-cache_size = 4096
-cache_min_ttl = 600
-cache_max_ttl = 86400
-cache_neg_min_ttl = 60
-cache_neg_max_ttl = 600
+cache_size = 256
+cache_min_ttl = 60
 
-tls_disable_session_tickets = true
-
-log_files_max_size = 0
-log_files_max_backups = 0
-log_level = 2
-use_syslog = true
-
-[static.'mullvad-doh']
-stamp = 'sdns://AgcAAAAAAAAACzE5NC4yNDIuMi4yAA9kbnMubXVsbHZhZC5uZXQKL2Rucy1xdWVyeQ'
-
-[static.'mullvad-all-doh']
-stamp = 'sdns://AgMAAAAAAAAACzE5NC4yNDIuMi45ABNhbGwuZG5zLm11bGx2YWQubmV0Ci9kbnMtcXVlcnk'
+# Other privacy and security settings
+block_ipv6 = true
+fallback_resolver = '9.9.9.9:53' # Used only for initial resolver discovery
