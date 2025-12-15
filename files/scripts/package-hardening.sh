@@ -458,7 +458,7 @@ EOF
       echo "Analyzing dependencies for removing: $pkg"
       
       # Perform a dry run to find and print dependent packages that will be removed
-      dnf5 remove --assumeno -y "$pkg" | grep -E '^\s{1,2}[a-zA-Z0-9]' | sed 's/^[[:space:]]*/  └─ /'
+      echo "n" | dnf5 remove "$pkg" 2>/dev/null | grep -E '^\s{1,2}[a-zA-Z0-9]' | sed 's/^[[:space:]]*/  └─ /'
       
       # Perform the actual removal
       dnf5 remove -y "$pkg" &>/dev/null
