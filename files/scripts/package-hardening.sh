@@ -6,8 +6,9 @@ dnf5 config-manager addrepo --from-repofile="https://repo.secureblue.dev/secureb
 rm -f /etc/dnf/protected.d/sudo.conf
 
 # Categorized removal command (same packages as original, only reorganized)
+
+# --- Desktop / GNOME / Shell ---
 dnf5 remove -y \
-  # --- Desktop / GNOME / Shell ---
   nautilus-extensions \
   desktop-backgrounds-gnome \
   fedora-bookmarks \
@@ -62,9 +63,9 @@ dnf5 remove -y \
   yelp-libs \
   yelp-xsl \
   nautilus-extensions
-  
+
+# --- Printing / Scanning ---
 dnf5 remove -y \
-  # --- Printing / Scanning ---
   cups \
   cups-browsed \
   cups-client \
@@ -94,8 +95,8 @@ dnf5 remove -y \
   tesseract-libs \
   gutenprint-libs
 
+# --- Multimedia / Audio / Video / GStreamer ---
 dnf5 remove -y \
-  # --- Multimedia / Audio / Video / GStreamer ---
   ffmpeg-free \
   gst-editing-services \
   gstreamer1-plugin-libav \
@@ -126,8 +127,8 @@ dnf5 remove -y \
   libmediaart \
   leptonica
 
+# --- Browsers / Web / Networking tools ---
 dnf5 remove -y \
-  # --- Browsers / Web / Networking tools ---
   bind-utils \
   dnsmasq \
   dhcp-client \
@@ -140,8 +141,8 @@ dnf5 remove -y \
   wget2-wget \
   curl
 
+# --- NetworkManager / VPN / Remote access ---
 dnf5 remove -y \
-  # --- NetworkManager / VPN / Remote access ---
   NetworkManager-adsl \
   NetworkManager-bluetooth \
   NetworkManager-openconnect \
@@ -167,8 +168,8 @@ dnf5 remove -y \
   samba-client \
   smbclient
 
+# --- Virtualization & Containers ---
 dnf5 remove -y \
-  # --- Virtualization & Containers ---
   virtualbox-guest-additions \
   toolbox \
   systemd-container \
@@ -180,8 +181,8 @@ dnf5 remove -y \
   qemu-guest-agent \
   qemu-user-static-aarch64
 
+# --- Hardware / Modems / Bluetooth / USB ---
 dnf5 remove -y \
-  # --- Hardware / Modems / Bluetooth / USB ---
   bluez \
   bluez-cups \
   bluez-obexd \
@@ -205,8 +206,8 @@ dnf5 remove -y \
   hypervkvpd \
   hypervvssd
 
+# --- Accessibility / Input / IBus / Speech / Braille ---
 dnf5 remove -y \
-  # --- Accessibility / Input / IBus / Speech / Braille ---
   braille-printer-app \
   brlapi \
   brltty \
@@ -232,8 +233,8 @@ dnf5 remove -y \
   ibus-typing-booster \
   orca
 
+# --- System services / Daemons / HTTP ---
 dnf5 remove -y \
-  # --- System services / Daemons / HTTP ---
   httpd \
   httpd-core \
   httpd-filesystem \
@@ -248,8 +249,8 @@ dnf5 remove -y \
   mtr \
   rsync
 
+# --- System & Kernel tools / Storage / LVM / Filesystems ---
 dnf5 remove -y \
-  # --- System & Kernel tools / Storage / LVM / Filesystems ---
   kpartx \
   lvm2 \
   lvm2-libs \
@@ -268,8 +269,8 @@ dnf5 remove -y \
   ppp \
   slirp4netns
 
+# --- Security / Auth / SSSD / SSH / PAM / PKI ---
 dnf5 remove -y \
-  # --- Security / Auth / SSSD / SSH / PAM / PKI ---
   sssd-common \
   sssd-kcm \
   sssd-krb5-common \
@@ -284,8 +285,8 @@ dnf5 remove -y \
   openconnect \
   openvpn
 
+# --- Libraries (misc low-level libraries) ---
 dnf5 remove -y \
-  # --- Libraries (misc low-level libraries) ---
   apr \
   apr-util \
   apr-util-lmdb \
@@ -313,8 +314,8 @@ dnf5 remove -y \
   libraqm \
   LibRaw
 
+# --- Language packs / Spell / Fonts / Locale ---
 dnf5 remove -y \
-  # --- Language packs / Spell / Fonts / Locale ---
   langpacks-core-en \
   langpacks-en \
   langpacks-fonts-en \
@@ -325,8 +326,8 @@ dnf5 remove -y \
   unicode-ucd \
   words
 
+# --- Python & runtime packages ---
 dnf5 remove -y \
-  # --- Python & runtime packages ---
   python-unversioned-command \
   python3-boto3 \
   python3-click \
@@ -345,8 +346,8 @@ dnf5 remove -y \
   python3-louis \
   python3-langtable
 
+# --- Developer / Build / Tools / CLI ---
 dnf5 remove -y \
-  # --- Developer / Build / Tools / CLI ---
   git-core-doc \
   rpm-build-libs \
   rsync \
@@ -367,8 +368,8 @@ dnf5 remove -y \
   mod_lua \
   passim
 
+# --- Smart card / PC/SC / Security tokens ---
 dnf5 remove -y \
-  # --- Smart card / PC/SC / Security tokens ---
   pcsc-lite \
   pcsc-lite-ccid \
   pcsc-lite-libs \
@@ -378,8 +379,8 @@ dnf5 remove -y \
   pcsc-lite-ccid \
   pcsc-lite-libs
 
+# --- Printing/Office helpers / Poppler / PDF ---
 dnf5 remove -y \
-  # --- Printing/Office helpers / Poppler / PDF ---
   poppler-cpp \
   poppler-utils \
   qpdf-libs \
@@ -388,8 +389,8 @@ dnf5 remove -y \
   exiv2 \
   djvulibre-libs
 
+# --- Misc utilities & extras (remaining miscellaneous packages) ---
 dnf5 remove -y \
-  # --- Misc utilities & extras (remaining miscellaneous packages) ---
   cifs-utils-info \
   gawk-all-langpacks \
   gd \
