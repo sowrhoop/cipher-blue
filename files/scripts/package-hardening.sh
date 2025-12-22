@@ -5,8 +5,6 @@ set -oue pipefail
 dnf5 config-manager addrepo --from-repofile="https://repo.secureblue.dev/secureblue.repo"
 rm -f /etc/dnf/protected.d/sudo.conf
 
-# Categorized removal command (same packages as original, only reorganized)
-
 # --- Desktop / GNOME / Shell ---
 dnf5 remove -y \
   nautilus-extensions \
@@ -17,14 +15,14 @@ dnf5 remove -y \
   gnome-classic-session \
   gnome-color-manager \
   gnome-tour \
-  #gnome-user-docs \
-  #gnome-user-share \
+  gnome-user-docs \
+  gnome-user-share \
   gnome-disk-utility \
   gnome-software \
   gnome-software-rpm-ostree \
-  #gnome-remote-desktop \
-  #gnome-browser-connector \
-  #epiphany-runtime \
+  gnome-remote-desktop \
+  gnome-browser-connector \
+  epiphany-runtime \
   firefox \
   firefox-langpacks \
   mozilla-filesystem \
@@ -54,11 +52,11 @@ dnf5 remove -y \
   qt5-qtx11extras \
   qt5-qtxmlpatterns \
   gtkmm3.0 \
-  #xcb-util-image \
-  #xcb-util-keysyms \
-  #xcb-util-renderutil \
-  #xcb-util-wm \
-  #xdriinfo \
+  xcb-util-image \
+  xcb-util-keysyms \
+  xcb-util-renderutil \
+  xcb-util-wm \
+  xdriinfo \
   yelp \
   yelp-libs \
   yelp-xsl \
