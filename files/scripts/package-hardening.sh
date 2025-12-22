@@ -17,14 +17,14 @@ dnf5 remove -y \
   gnome-classic-session \
   gnome-color-manager \
   gnome-tour \
-  gnome-user-docs \
-  gnome-user-share \
+  #gnome-user-docs \
+  #gnome-user-share \
   gnome-disk-utility \
   gnome-software \
   gnome-software-rpm-ostree \
-  gnome-remote-desktop \
-  gnome-browser-connector \
-  epiphany-runtime \
+  #gnome-remote-desktop \
+  #gnome-browser-connector \
+  #epiphany-runtime \
   firefox \
   firefox-langpacks \
   mozilla-filesystem \
