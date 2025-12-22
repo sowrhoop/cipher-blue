@@ -33,7 +33,7 @@ SUDO_REMOVAL="sudo sudo-python-plugin libsss_sudo"
 REMOVE_LIST="$NETWORK_SVCS $CONNECTIVITY $TELEMETRY $HARDWARE $PERIPHERALS $MISC $SUDO_REMOVAL"
 
 echo "Removing packages and legacy 'sudo' access..."
-dnf5 remove -y $REMOVE_LIST
+dnf5 remove -y --setopt=protected_packages= $REMOVE_LIST
 
 # 4. Installation of Hardening Tools
 # install_weak_deps=False ensures we don't accidentally pull sudo back in as a dependency.
