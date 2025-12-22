@@ -54,11 +54,11 @@ dnf5 remove -y \
   qt5-qtx11extras \
   qt5-qtxmlpatterns \
   gtkmm3.0 \
-  xcb-util-image \
-  xcb-util-keysyms \
-  xcb-util-renderutil \
-  xcb-util-wm \
-  xdriinfo \
+  #xcb-util-image \
+  #xcb-util-keysyms \
+  #xcb-util-renderutil \
+  #xcb-util-wm \
+  #xdriinfo \
   yelp \
   yelp-libs \
   yelp-xsl \
