@@ -90,15 +90,15 @@ gnome-shell-extension-window-list
 qadwaitadecorations-qt5
 qt-settings
 qt5-filesystem
-qt5-qtbase
-qt5-qtbase-common
-qt5-qtbase-gui
-qt5-qtdeclarative
-qt5-qtsvg
-qt5-qttranslations
-qt5-qtwayland
-qt5-qtx11extras
-qt5-qtxmlpatterns
+# Commented out qt5 core/base packages due to %postun scriptlet failures in CI rpm-ostree
+#qt5-qtbase
+#qt5-qtbase-common
+#qt5-qtbase-gui
+#qt5-qtdeclarative
+#qt5-qtsvg
+#qt5-qttranslations
+#qt5-qtwayland
+#qt5-qtx11extras
 gtkmm3.0
 xcb-util-image
 xcb-util-keysyms
