@@ -15,7 +15,7 @@ modules:
     - type: script
       scripts:
         - httpsmirrors.sh
-        - package-hardening.sh
+        - package-installer.sh
         - cipherblue-cleanup.sh
         - selinux-hardening.sh
     - type: rpm-ostree
