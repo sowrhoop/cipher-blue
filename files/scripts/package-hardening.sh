@@ -70,7 +70,7 @@ gnome-software
 gnome-software-rpm-ostree
 gnome-remote-desktop
 gnome-browser-connector
-epiphany-runtime
+#epiphany-runtime
 firefox
 firefox-langpacks
 mozilla-filesystem
@@ -539,5 +539,3 @@ if [ "${#failures[@]}" -ne 0 ]; then
   echo "See logs in: $LOG_DIR"
   exit 1
 fi
-
-# IMA setup runs later via ima-setup.sh (see recipe)
