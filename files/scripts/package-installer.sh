@@ -2,7 +2,7 @@
 set -oue pipefail
 
 # Install line (unchanged)
-dnf5 install --setopt=install_weak_deps=False nautilus trivalent tlp fapolicyd unbound dnscrypt-proxy ima-evm-utils keyutils openssl -y
+dnf5 install --setopt=install_weak_deps=False nautilus trivalent tlp fapolicyd unbound dnscrypt-proxy ima-evm-utils keyutils openssl -y --skip-unavailable
 
 # Enforce strong system-wide crypto policy
 if command -v update-crypto-policies >/dev/null 2>&1; then
